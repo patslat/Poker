@@ -23,17 +23,27 @@ class Hand
   def initialize
     @cards = []
   end
-
-  def self.calculate_winner(hand1, hand2)
-    hand1_score = HAND_SCORES[hand1.calculate_hand]
-    hand2_score = HAND_SCORES[hand2.calculate_hand]
-    if hand1_score == hand2_score
-      Hand.tiebreaker(hand1, hand2)
-    elsif hand1_score > hand2_score
-      hand1
-    else
-      hand2
+  
+  def self.calculate_winner(*hands)
+    hands_and_scores = {}
+    hands.each { |hand| hands_and_scores[hand] = HAND_SCORES[hand.calculate_hand] }
+    highest_hands = Hand.highest_hands(hands_and_scores)
+    return highest_hands[0] if highest_hands.length == 0
+    tiebreaker(*highest_hands) 
+  end
+  
+  def self.highest_hands(hands_and_scores)
+    highest_score = 0
+    highest_hands = []
+    hands_and_scores.each do |hand, score|
+      if score > highest_score
+        highest_score = score
+        highest_hands = [hand]
+      elsif score == highest_score
+        highest_hands << hand
+      end
     end
+    highest_hands
   end
   
   def calculate_hand
@@ -48,14 +58,17 @@ class Hand
     end
   end
   
-  def self.tiebreaker(hand1, hand2)
-    hand1_dup, hand2_dup = hand1.scores.dup.sort, hand2.scores.dup.sort
-    until hand1_dup.empty? || hand2_dup.empty?
-      hand1_high, hand2_high = hand1_dup.pop, hand2_dup.pop
-      next if hand1_high == hand2_high
-      return hand1_high > hand2_high ? hand1 : hand2
+  def self.tiebreaker(*hands)
+    hand_scores = hands.map { |hand| hand.scores.dup.sort! }
+    highs = hand_scores.map(&:pop)
+    until find_highest_scores(highs).length == 1
+      highs = hand_scores.map(&:pop)
     end
-    [hand1, hand2].sample #random if total tie
+    hands[highs.index(highs.max)]
+  end
+  
+  def self.find_highest_scores(highs)
+    highs.select { |n| n == highs.max }
   end
   
   def flush?
