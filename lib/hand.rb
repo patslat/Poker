@@ -1,3 +1,8 @@
+require_relative 'game'
+require_relative 'card'
+require_relative 'deck'
+require_relative 'player'
+
 class Hand
   PAIR_HANDS = {
     [3, 2] => :full_house,
@@ -24,6 +29,15 @@ class Hand
     @cards = []
   end
   
+  def show
+    5.times { |n| print "(#{n}) #{cards[n].value}, #{cards[n].suit}  "}
+    print "\n"
+  end
+  
+  def discard(card_indices)
+    card_indices.sort.reverse.each { |index| cards.delete_at(index) }
+  end
+  
   def self.calculate_winner(*hands)
     hands_and_scores = {}
     hands.each { |hand| hands_and_scores[hand] = HAND_SCORES[hand.calculate_hand] }
@@ -35,6 +49,7 @@ class Hand
   def self.highest_hands(hands_and_scores)
     highest_score = 0
     highest_hands = []
+    p hands_and_scores
     hands_and_scores.each do |hand, score|
       if score > highest_score
         highest_score = score
@@ -84,7 +99,10 @@ class Hand
   end
   
   def pair_type
-    PAIR_HANDS[count_same_score.values]
+    p count_same_score
+    a = PAIR_HANDS[count_same_score.values]
+    p "after hash"
+    p a
   end
 
   def count_same_score

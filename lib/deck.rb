@@ -1,4 +1,7 @@
-require 'card.rb'
+require_relative 'hand'
+require_relative 'game'
+require_relative 'player'
+require_relative 'card'
 
 class Deck
   attr_reader :cards
